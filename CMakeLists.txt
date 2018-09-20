@@ -14,12 +14,16 @@ if (WIN32)
         set(VULKAN_STATIC_LIBRARY "$ENV{VULKAN_SDK}/Lib32/vkstatic.1.lib")
     endif()
 elseif (APPLE)
-    set(CMAKE_FIND_FRAMEWORK NEVER)
-    find_library(VULKAN_LIBRARY MoltenVK)
-    set(CMAKE_FIND_FRAMEWORK ONLY)
-    find_library(VULKAN_STATIC_LIBRARY MoltenVK)
-    find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS
-            "${VULKAN_LIBRARY}/Headers")
+    find_library("lib_quartzcore" "QuartzCore")
+    find_library("lib_metal" "Metal")
+    set(Vulkan_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/include)
+    set(VULKAN_LIBRARY      ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/MoltenVK)
+    set(Vulkan_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/include)
+#    set(CMAKE_FIND_FRAMEWORK NEVER)
+#    find_library(VULKAN_LIBRARY MoltenVK)
+#    set(CMAKE_FIND_FRAMEWORK ONLY)
+#    find_library(VULKAN_STATIC_LIBRARY MoltenVK)
+#    find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS "${VULKAN_LIBRARY}/Headers")
 else()
     find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h HINTS
             "$ENV{VULKAN_SDK}/include")
@@ -27,7 +31,7 @@ else()
             "$ENV{VULKAN_SDK}/lib")
 endif()
 include_directories(${Vulkan_INCLUDE_DIRS})
-list(APPEND LIBS ${VULKAN_LIBRARY})
+list(APPEND LIBS ${VULKAN_LIBRARY} ${lib_metal} ${lib_quartzcore})
 message(STATUS "Vulkan Include dirs: ${Vulkan_INCLUDE_DIRS} and libs: ${VULKAN_LIBRARY}")
 
 # Config glfw3
@@ -46,6 +50,8 @@ include_directories(3rd_party/vulkan-header)
 
 # Config stb_image & tinyobjloader
 include_directories(3rd_party/others)
+
+include_directories(3rd_party/MoltenVK/macOS)
 
 # Demos
 add_subdirectory(Tutorial01)
