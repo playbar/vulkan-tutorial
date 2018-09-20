@@ -3,6 +3,8 @@ project(vulkan_tutorial)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_definitions(-DNDEBUG)
+
 # Config vulkan
 if (WIN32)
     set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/Include")
@@ -17,8 +19,8 @@ elseif (APPLE)
     find_library("lib_quartzcore" "QuartzCore")
     find_library("lib_metal" "Metal")
     set(Vulkan_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/include)
-    set(VULKAN_LIBRARY      ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/MoltenVK)
-    set(Vulkan_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/include)
+    set(VULKAN_LIBRARY      ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK//libMoltenVK.dylib)
+#    set(Vulkan_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/MoltenVK/include)
 #    set(CMAKE_FIND_FRAMEWORK NEVER)
 #    find_library(VULKAN_LIBRARY MoltenVK)
 #    set(CMAKE_FIND_FRAMEWORK ONLY)

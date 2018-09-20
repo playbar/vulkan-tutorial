@@ -1,15 +1,19 @@
 /*
  * mvk_datatypes.h
  *
- * Copyright (c) 2014-2017 The Brenwill Workshop Ltd. All rights reserved.
- * http://www.brenwill.com
+ * Copyright (c) 2014-2018 The Brenwill Workshop Ltd. (http://www.brenwill.com)
  *
- * Use of this document is governed by the Molten License Agreement, as included
- * in the MoltenVK distribution package. CAREFULLY READ THAT LICENSE AGREEMENT BEFORE
- * READING AND USING THIS DOCUMENT. BY READING OR OTHERWISE USING THIS DOCUMENT,
- * YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS AND CONDITIONS OF THAT LICENSE
- * AGREEMENT. IF YOU DO NOT ACCEPT THE TERMS AND CONDITIONS OF THAT LICENSE AGREEMENT,
- * DO NOT READ OR USE THIS DOCUMENT.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -27,7 +31,7 @@
 extern "C" {
 #endif	//  __cplusplus
 	
-#include <MoltenVK/vulkan/vulkan.h>
+#include <vulkan/vulkan.h>
 
 #import <Metal/Metal.h>
 #import <CoreGraphics/CoreGraphics.h>
@@ -41,11 +45,22 @@ extern "C" {
 /** Enumerates the data type of a format. */
 typedef enum {
     kMVKFormatNone,             /**< Format type is unknown. */
-    kMVKFormatColorFloat,		/**< A floating point color. */
-    kMVKFormatColorInt,         /**< A signed integer color. */
-    kMVKFormatColorUInt,		/**< An unsigned integer color. */
+	kMVKFormatColorHalf,		/**< A 16-bit floating point color. */
+    kMVKFormatColorFloat,		/**< A 32-bit floating point color. */
+	kMVKFormatColorInt8,        /**< A signed 8-bit integer color. */
+	kMVKFormatColorUInt8,		/**< An unsigned 8-bit integer color. */
+	kMVKFormatColorInt16,       /**< A signed 16-bit integer color. */
+	kMVKFormatColorUInt16,		/**< An unsigned 16-bit integer color. */
+    kMVKFormatColorInt32,       /**< A signed 32-bit integer color. */
+    kMVKFormatColorUInt32,		/**< An unsigned 32-bit integer color. */
     kMVKFormatDepthStencil,     /**< A depth and stencil value. */
 } MVKFormatType;
+
+/** Returns whether the VkFormat is supported by this implementation. */
+bool mvkVkFormatIsSupported(VkFormat vkFormat);
+
+/** Returns whether the MTLPixelFormat is supported by this implementation. */
+bool mvkMTLPixelFormatIsSupported(MTLPixelFormat mtlFormat);
 
 /** Returns the format type corresponding to the specified Vulkan VkFormat, */
 MVKFormatType mvkFormatTypeFromVkFormat(VkFormat vkFormat);
@@ -114,29 +129,36 @@ float mvkMTLPixelFormatBytesPerTexel(MTLPixelFormat mtlFormat);
 
 /**
  * Returns the size, in bytes, of a row of texels of the specified Vulkan format.
+ *
  * For compressed formats, this takes into consideration the compression block size,
- * and texelsPerRow should specify the width in texels, not blocks.
+ * and texelsPerRow should specify the width in texels, not blocks. The result is rounded
+ * up if texelsPerRow is not an integer multiple of the compression block width.
  */
 size_t mvkVkFormatBytesPerRow(VkFormat vkFormat, uint32_t texelsPerRow);
 
 /**
- * Returns the size, in bytes, of a row of texels of the specified Metal format. 
+ * Returns the size, in bytes, of a row of texels of the specified Metal format.
+ *
  * For compressed formats, this takes into consideration the compression block size,
- * and texelsPerRow should specify the width in texels, not blocks.
+ * and texelsPerRow should specify the width in texels, not blocks. The result is rounded
+ * up if texelsPerRow is not an integer multiple of the compression block width.
  */
 size_t mvkMTLPixelFormatBytesPerRow(MTLPixelFormat mtlFormat, uint32_t texelsPerRow);
 
 /**
  * Returns the size, in bytes, of a texture layer of the specified Vulkan format.
+ *
  * For compressed formats, this takes into consideration the compression block size,
- * and texelRowsPerLayer should specify the height in texels, not blocks.
+ * and texelRowsPerLayer should specify the height in texels, not blocks. The result is
+ * rounded up if texelRowsPerLayer is not an integer multiple of the compression block height.
  */
 size_t mvkVkFormatBytesPerLayer(VkFormat vkFormat, size_t bytesPerRow, uint32_t texelRowsPerLayer);
 
 /**
  * Returns the size, in bytes, of a texture layer of the specified Metal format.
  * For compressed formats, this takes into consideration the compression block size,
- * and texelRowsPerLayer should specify the height in texels, not blocks.
+ * and texelRowsPerLayer should specify the height in texels, not blocks. The result is
+ * rounded up if texelRowsPerLayer is not an integer multiple of the compression block height.
  */
 size_t mvkMTLPixelFormatBytesPerLayer(MTLPixelFormat mtlFormat, size_t bytesPerRow, uint32_t texelRowsPerLayer);
 
@@ -243,13 +265,25 @@ uint32_t mvkMipmapLevels3D(VkExtent3D extent);
  * Returns the size of the specified zero-based mipmap level, 
  * when the size of the base level is the specified size. 
  */
-VkExtent2D mvkMipmapLevelSizeFromBaseSize(VkExtent2D baseSize, uint32_t level);
+VkExtent2D mvkMipmapLevelSizeFromBaseSize2D(VkExtent2D baseSize, uint32_t level);
+
+/**
+ * Returns the size of the specified zero-based mipmap level,
+ * when the size of the base level is the specified size.
+ */
+VkExtent3D mvkMipmapLevelSizeFromBaseSize3D(VkExtent3D baseSize, uint32_t level);
 
 /** 
  * Returns the size of the mipmap base level, when the size of 
  * the specified zero-based mipmap level is the specified size.
  */
-VkExtent2D mvkMipmapBaseSizeFromLevelSize(VkExtent2D levelSize, uint32_t level);
+VkExtent2D mvkMipmapBaseSizeFromLevelSize2D(VkExtent2D levelSize, uint32_t level);
+
+/**
+ * Returns the size of the mipmap base level, when the size of
+ * the specified zero-based mipmap level is the specified size.
+ */
+VkExtent3D mvkMipmapBaseSizeFromLevelSize3D(VkExtent3D levelSize, uint32_t level);
 
 
 #pragma mark Samplers
@@ -297,10 +331,12 @@ MTLVertexStepFunction mvkMTLVertexStepFunctionFromVkVertexInputRate(VkVertexInpu
 /** Returns the Metal MTLPrimitiveType corresponding to the specified Vulkan VkPrimitiveTopology. */
 MTLPrimitiveType mvkMTLPrimitiveTypeFromVkPrimitiveTopology(VkPrimitiveTopology vkTopology);
 
-#if MLN_MACOS
-/** Returns the Metal MTLPrimitiveTopologyClass corresponding to the specified Vulkan VkPrimitiveTopology. */
-MTLPrimitiveTopologyClass mvkMTLPrimitiveTopologyClassFromVkPrimitiveTopology(VkPrimitiveTopology vkTopology);
-#endif
+/**
+ * Returns the Metal MTLPrimitiveTopologyClass corresponding to the specified Vulkan VkPrimitiveTopology.
+ *
+ * The value is treated as an NSUInteger to support OS versions on which the enum is unavailable.
+ */
+NSUInteger mvkMTLPrimitiveTopologyClassFromVkPrimitiveTopology(VkPrimitiveTopology vkTopology);
 
 /** Returns the Metal MTLLoadAction corresponding to the specified Vulkan VkAttachmentLoadOp. */
 MTLLoadAction mvkMTLLoadActionFromVkAttachmentLoadOp(VkAttachmentLoadOp vkLoadOp);
@@ -347,14 +383,24 @@ static inline VkExtent2D mvkVkExtent2DFromCGSize(CGSize cgSize) {
 	return vkExt;
 }
 
-/** Returns a Metal MTLOrigin constructed from the specified VkOffset3D. */
+/** Returns a Metal MTLOrigin constructed from a VkOffset3D. */
 static inline MTLOrigin mvkMTLOriginFromVkOffset3D(VkOffset3D vkOffset) {
 	return MTLOriginMake(vkOffset.x, vkOffset.y, vkOffset.z);
 }
 
-/** Returns a Metal MTLSize constructed from the specified VkExtent3D. */
+/** Returns a Vulkan VkOffset3D constructed from a Metal MTLOrigin. */
+static inline VkOffset3D mvkVkOffset3DFromMTLSize(MTLOrigin mtlOrigin) {
+	return { (int32_t)mtlOrigin.x, (int32_t)mtlOrigin.y, (int32_t)mtlOrigin.z };
+}
+
+/** Returns a Metal MTLSize constructed from a VkExtent3D. */
 static inline MTLSize mvkMTLSizeFromVkExtent3D(VkExtent3D vkExtent) {
 	return MTLSizeMake(vkExtent.width, vkExtent.height, vkExtent.depth);
+}
+
+/** Returns a Vulkan VkExtent3D  constructed from a Metal MTLSize. */
+static inline VkExtent3D mvkVkExtent3DFromMTLSize(MTLSize mtlSize) {
+	return { (uint32_t)mtlSize.width, (uint32_t)mtlSize.height, (uint32_t)mtlSize.depth };
 }
 
 
@@ -378,43 +424,6 @@ MTLCPUCacheMode mvkMTLCPUCacheModeFromVkMemoryPropertyFlags(VkMemoryPropertyFlag
 
 /** Returns the Metal resource option flags corresponding to the specified Vulkan memory flags. */
 MTLResourceOptions mvkMTLResourceOptionsFromVkMemoryPropertyFlags(VkMemoryPropertyFlags vkFlags);
-
-
-#pragma mark -
-#pragma mark Shaders
-
-/** 
- * Enumerates the magic number values to set in the MVKMSLSPIRVHeader when 
- * submitting a SPIR-V stream that contains either Metal Shading Language source 
- * code or Metal Shading Language compiled binary code in place of SPIR-V code.
- */
-typedef enum {
-	kMVKMagicNumberMSLSourceCode	= 0x19960412,	/**< SPIR-V stream contains Metal Shading Language source code. */
-	kMVKMagicNumberMSLCompiledCode	= 0x19981215,	/**< SPIR-V stream contains Metal Shading Language compiled binary code. */
-} MVKMSLMagicNumber;
-
-/** 
- * Describes the header at the start of an SPIR-V stream, when it contains either
- * Metal Shading Language source code or Metal Shading Language compiled binary code.
- *
- * To submit MSL source code to the vkCreateShaderModule() function in place of SPIR-V
- * code, prepend a MVKMSLSPIRVHeader containing the kMVKMagicNumberMSLSourceCode magic
- * number to the MSL source code. The MSL source code must be null-terminated.
- *
- * To submit MSL compiled binary code to the vkCreateShaderModule() function in place of
- * SPIR-V code, prepend a MVKMSLSPIRVHeader containing the kMVKMagicNumberMSLCompiledCode
- * magic number to the MSL compiled binary code.
- *
- * In both cases, the pCode element of VkShaderModuleCreateInfo should pointer to the
- * location of the MVKMSLSPIRVHeader, and the MSL code should start at the byte immediately
- * after the MVKMSLSPIRVHeader.
- *
- * The codeSize element of VkShaderModuleCreateInfo should be set to the entire size of
- * the submitted code memory, including the additional sizeof(MVKMSLSPIRVHeader) bytes 
- * taken up by the MVKMSLSPIRVHeader, and, in the case of MSL source code, including 
- * the null-terminator byte.
- */
-typedef uint32_t MVKMSLSPIRVHeader;
 
 
 #ifdef __cplusplus
